@@ -2,8 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _visible = false;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => setState(() => _visible = true));
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +45,7 @@ class HomeScreen extends StatelessWidget {
                     height: 113.83,
                     padding: const EdgeInsets.fromLTRB(35.359375, 4.84375, 36.8125, 4.84375),
                     child: GestureDetector(
-                      onTap: () => context.push('/primary'),
+                      onTap: () => context.go('/primary'),
                       child: Center(
                         child: SvgPicture.asset('assets/icons/gear.svg', width: 77.5, height: 77.5),
                       ),
@@ -48,7 +59,12 @@ class HomeScreen extends StatelessWidget {
                 width: double.infinity,
                 color: const Color(0xFF000000),
                 child: Center(
-                  child: const _FigmaButtonsRow(),
+                  child: AnimatedOpacity(
+                    opacity: _visible ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _FigmaButtonsRow(),
+                  ),
                 ),
               ),
             ),
@@ -126,135 +142,18 @@ class _WhiteBalanceButtonState extends State<_WhiteBalanceButton> {
   }
 }
 
-class _StartRecButton extends StatefulWidget {
-  const _StartRecButton();
-  @override
-  State<_StartRecButton> createState() => _StartRecButtonState();
-}
-
-class _StartRecButtonState extends State<_StartRecButton> {
-  int _state = 0; // 0 = default, 1 = variant2
-  double _scale() {
-    return _state == 0 ? 0.50 : 0.53;
-  }
-  Widget _default() {
-    return SizedBox(
-      width: 600,
-      height: 600,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: SvgPicture.asset('assets/icons/start_rec_home_default.svg', fit: BoxFit.contain),
-          ),
-          const Positioned(
-            left: 131,
-            top: 131,
-            child: SizedBox(
-              width: 338,
-              height: 338,
-              child: DecoratedBox(
-                decoration: ShapeDecoration(
-                  shape: OvalBorder(
-                    side: BorderSide(width: 12, color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 150 + 45,
-            top: 150 + 45,
-            child: GestureDetector(
-              onTap: () => setState(() => _state = 1),
-              child: const SizedBox(width: 210, height: 210),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  Widget _variant2() {
-    return SizedBox(
-      width: 600,
-      height: 907,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/icons/start_rec_home_variant2.svg',
-              fit: BoxFit.contain,
-            ),
-          ),
-          Positioned(
-            left: 0,
-            top: 101,
-            child: SizedBox(
-              width: 600,
-              height: 807,
-              child: Stack(
-                children: [
-                  const Positioned(
-                    left: 131,
-                    top: 67,
-                    child: SizedBox(
-                      width: 338,
-                      height: 338,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          shape: OvalBorder(
-                            side: BorderSide(width: 12, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Positioned(
-                    left: 131,
-                    top: 502,
-                    child: SizedBox(
-                      width: 338,
-                      height: 338,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          shape: OvalBorder(
-                            side: BorderSide(width: 12, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 131 + 84,
-                    top: 37 + 84,
-                    child: GestureDetector(
-                      onTap: () => setState(() => _state = 0),
-                      child: const SizedBox(width: 170, height: 170),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+class _StartRecButton extends StatelessWidget {
+  final ValueChanged<bool>? onExpandedChanged;
+  const _StartRecButton({this.onExpandedChanged});
   @override
   Widget build(BuildContext context) {
     const size = 290.63;
-    return SizedBox(
-      width: size,
-      height: size,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        child: Transform.scale(
-          scale: _scale(),
-          child: FittedBox(
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-            child: _state == 0 ? _default() : _variant2(),
-          ),
-        ),
+    return GestureDetector(
+      onTap: () => onExpandedChanged?.call(true),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: SvgPicture.asset('assets/icons/start_rec_default.svg', fit: BoxFit.contain),
       ),
     );
   }
@@ -288,33 +187,120 @@ class _ScreenshotButtonState extends State<_ScreenshotButton> {
   }
 }
 
-class _FigmaButtonsRow extends StatelessWidget {
+class _FigmaButtonsRow extends StatefulWidget {
   const _FigmaButtonsRow();
   @override
+  State<_FigmaButtonsRow> createState() => _FigmaButtonsRowState();
+}
+
+class _FigmaButtonsRowState extends State<_FigmaButtonsRow> {
+  bool _expanded = false;
+  bool _bottomPauseVariant = false;
+  void _setExpanded(bool v) => setState(() {
+        _expanded = v;
+        _bottomPauseVariant = false;
+      });
+  @override
   Widget build(BuildContext context) {
-    const gap = 38.265625;
     const horizontalPadding = 46.015625;
     return SizedBox(
       width: 992,
       height: 630,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 82.828125),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: const [
-              _ScreenshotButton(),
-              SizedBox(width: gap),
-              _StartRecButton(),
-              SizedBox(width: gap),
-              _WhiteBalanceButton(),
-            ],
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 82.828125),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const _ScreenshotButton(),
+                GestureDetector(
+                  onTap: _expanded ? null : () => _setExpanded(true),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AnimatedOpacity(
+                        opacity: _expanded ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: SizedBox(
+                          width: 290.63,
+                          height: 290.63,
+                          child: SvgPicture.asset('assets/icons/start_rec_default.svg', fit: BoxFit.contain),
+                        ),
+                      ),
+                      AnimatedOpacity(
+                        opacity: _expanded ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: SizedBox(
+                          width: 290.63,
+                          height: 439.34,
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: SvgPicture.asset(
+                                  'assets/icons/expanded_background_recording_rectangle.svg',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.topCenter,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 32.45),
+                                  child: GestureDetector(
+                                    onTap: () => _setExpanded(false),
+                                    child: SizedBox(
+                                      width: 163.72,
+                                      height: 163.72,
+                                      child: SvgPicture.asset('assets/icons/pause.svg', fit: BoxFit.contain),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 32.45),
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => _bottomPauseVariant = !_bottomPauseVariant),
+                                    child: SizedBox(
+                                      width: 163.72,
+                                      height: 163.72,
+                                      child: Stack(
+                                        children: [
+                                          AnimatedOpacity(
+                                            opacity: _bottomPauseVariant ? 0.0 : 1.0,
+                                            duration: const Duration(milliseconds: 300),
+                                            curve: Curves.easeInOut,
+                                            child: SvgPicture.asset('assets/icons/Property 1=PAUSE.svg', fit: BoxFit.contain),
+                                          ),
+                                          AnimatedOpacity(
+                                            opacity: _bottomPauseVariant ? 1.0 : 0.0,
+                                            duration: const Duration(milliseconds: 300),
+                                            curve: Curves.easeInOut,
+                                            child: SvgPicture.asset('assets/icons/Property 1=Variant2 (2).svg', fit: BoxFit.contain),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const _WhiteBalanceButton(),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

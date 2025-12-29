@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../widgets/styled_slider.dart';
 import 'package:go_router/go_router.dart';
 
 class AdvancedScreen extends StatelessWidget {
@@ -35,7 +36,7 @@ class AdvancedScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(35.36, 4.84, 36.81, 4.84),
                         child: GestureDetector(
-                          onTap: () => context.push('/home'),
+                          onTap: () => context.go('/home'),
                           child: Center(
                             child: SvgPicture.asset('assets/icons/settings_box.svg', width: 77.5, height: 77.5),
                           ),
@@ -76,7 +77,7 @@ class AdvancedScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         GestureDetector(
-                          onTap: () => context.push('/primary'),
+                          onTap: () => context.go('/primary'),
                           child: const Opacity(
                             opacity: 0.5,
                             child: Text(
@@ -95,7 +96,7 @@ class AdvancedScreen extends StatelessWidget {
                         SvgPicture.asset('assets/icons/frame34_vector1.svg', width: 5, height: 70.5),
                         const SizedBox(width: 20),
                         GestureDetector(
-                          onTap: () => context.push('/colour'),
+                          onTap: () => context.go('/colour'),
                           child: const Opacity(
                             opacity: 0.5,
                             child: Text(
@@ -162,9 +163,19 @@ class _DesignCanvas extends StatelessWidget {
   }
 }
 
-class _SliderRow extends StatelessWidget {
+class _SliderRow extends StatefulWidget {
   final String label;
   const _SliderRow({required this.label});
+  @override
+  State<_SliderRow> createState() => _SliderRowState();
+}
+
+class _SliderRowState extends State<_SliderRow> {
+  double _value = 50;
+  final double _min = 0;
+  final double _max = 100;
+  final int _divisions = 100;
+  String _format(double v) => v.round().toString();
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -176,24 +187,35 @@ class _SliderRow extends StatelessWidget {
             left: 0,
             top: 1,
             child: SizedBox(
-              width: 300,
+              width: 320,
               height: 129,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 36),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(label, style: Theme.of(context).textTheme.headlineMedium),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(widget.label, style: Theme.of(context).textTheme.headlineMedium),
+                  ),
                 ),
               ),
             ),
           ),
           Positioned(
-            left: 257,
+            left: 320,
             top: 1,
             child: SizedBox(
-              width: 737,
+              width: 672,
               height: 130,
-              child: SvgPicture.asset('assets/icons/brightness_slider.svg', width: 737, height: 130, fit: BoxFit.fill),
+              child: StyledSlider(
+                value: _value,
+                min: _min,
+                max: _max,
+                divisions: _divisions,
+                formatLabel: _format,
+                onChanged: (v) => setState(() => _value = v),
+              ),
             ),
           ),
         ],

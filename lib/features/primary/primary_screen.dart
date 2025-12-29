@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../widgets/styled_slider.dart';
 import 'package:go_router/go_router.dart';
 
 class PrimaryScreen extends StatelessWidget {
@@ -35,7 +36,7 @@ class PrimaryScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(35.36, 4.84, 36.81, 4.84),
                         child: GestureDetector(
-                          onTap: () => context.push('/home'),
+                          onTap: () => context.go('/home'),
                           child: Center(
                             child: SvgPicture.asset('assets/icons/settings_box.svg', width: 77.5, height: 77.5),
                           ),
@@ -54,15 +55,15 @@ class PrimaryScreen extends StatelessWidget {
                 height: 500,
                 child: Column(
                   children: [
-                    const _SliderRow(
+                    _SliderRow(
                       label: 'Brightness',
                       sliderAsset: 'assets/icons/brightness_slider.svg',
                     ),
-                    const _SliderRow(
+                    _SliderRow(
                       label: 'Zoom',
                       sliderAsset: 'assets/icons/zoom_slider.svg',
                     ),
-                    const _SliderRow(
+                    _SliderRow(
                       label: 'Contrast',
                       sliderAsset: 'assets/icons/contrast_slider.svg',
                     ),
@@ -106,7 +107,7 @@ class PrimaryScreen extends StatelessWidget {
                         SvgPicture.asset('assets/icons/frame34_vector1.svg', width: 5, height: 70.5),
                         const SizedBox(width: 20),
                         GestureDetector(
-                          onTap: () => context.push('/colour'),
+                          onTap: () => context.go('/colour'),
                           child: const Opacity(
                             opacity: 0.5,
                             child: Text(
@@ -125,7 +126,7 @@ class PrimaryScreen extends StatelessWidget {
                         SvgPicture.asset('assets/icons/frame34_vector2.svg', width: 5, height: 70.5),
                         const SizedBox(width: 20),
                         GestureDetector(
-                          onTap: () => context.push('/advanced'),
+                          onTap: () => context.go('/advanced'),
                           child: const Opacity(
                             opacity: 0.5,
                             child: Text(
@@ -176,10 +177,38 @@ class _DesignCanvas extends StatelessWidget {
   }
 }
 
-class _SliderRow extends StatelessWidget {
+class _SliderRow extends StatefulWidget {
   final String label;
   final String sliderAsset;
   const _SliderRow({required this.label, required this.sliderAsset});
+  @override
+  State<_SliderRow> createState() => _SliderRowState();
+}
+
+class _SliderRowState extends State<_SliderRow> {
+  double _value = 50;
+  late double _min;
+  late double _max;
+  int? _divisions;
+  late String Function(double) _format;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.label.toLowerCase() == 'zoom') {
+      _min = 1.0;
+      _max = 4.0;
+      _divisions = 30;
+      _format = (v) => '${v.toStringAsFixed(1)}x';
+      _value = 2.0;
+    } else {
+      _min = 0.0;
+      _max = 100.0;
+      _divisions = 100;
+      _format = (v) => v.round().toString();
+      _value = 50.0;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -191,24 +220,35 @@ class _SliderRow extends StatelessWidget {
             left: 0,
             top: 1,
             child: SizedBox(
-              width: 300,
+              width: 320,
               height: 129,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 36),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(label, style: Theme.of(context).textTheme.headlineMedium),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(widget.label, style: Theme.of(context).textTheme.headlineMedium),
+                  ),
                 ),
               ),
             ),
           ),
           Positioned(
-            left: 255,
+            left: 320,
             top: 1,
             child: SizedBox(
-              width: 737,
+              width: 672,
               height: 130,
-              child: SvgPicture.asset(sliderAsset, width: 737, height: 130, fit: BoxFit.fill),
+              child: StyledSlider(
+                value: _value,
+                min: _min,
+                max: _max,
+                divisions: _divisions,
+                formatLabel: _format,
+                onChanged: (v) => setState(() => _value = v),
+              ),
             ),
           ),
         ],

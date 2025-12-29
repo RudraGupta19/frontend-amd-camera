@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'features/home/home_screen.dart';
+import 'features/splash/splash_screen.dart';
 import 'features/rec/rec_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/primary/primary_screen.dart';
@@ -10,36 +11,41 @@ GoRouter buildRouter() {
   return GoRouter(
     routes: [
       GoRoute(
+        path: '/splash',
+        name: 'splash',
+        pageBuilder: (context, state) => const NoTransitionPage(child: SplashScreen()),
+      ),
+      GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const HomeScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
       ),
       GoRoute(
         path: '/primary',
         name: 'primary',
-        builder: (context, state) => const PrimaryScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: PrimaryScreen()),
       ),
       GoRoute(
         path: '/colour',
         name: 'colour',
-        builder: (context, state) => const ColourScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: ColourScreen()),
       ),
       GoRoute(
         path: '/advanced',
         name: 'advanced',
-        builder: (context, state) => const AdvancedScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: AdvancedScreen()),
       ),
       GoRoute(
         path: '/rec',
         name: 'rec',
-        builder: (context, state) => const RecScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: RecScreen()),
       ),
       GoRoute(
         path: '/settings',
         name: 'settings',
-        builder: (context, state) => const SettingsScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: SettingsScreen()),
       ),
     ],
-    initialLocation: '/home',
+    initialLocation: '/splash',
   );
 }
